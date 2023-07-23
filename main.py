@@ -1,72 +1,48 @@
 import pygame
-from manager import GameManager
-from BoardGenerator import BoadGenerator
 import argparse
 
-# Constants for the grid size and box size
-NUM_BOXES = 50
-SCREEN_SIZE = (750, 750)
-
-# Calculate the box size based on the screen size and number of boxes per axis
-BOX_SIZE = SCREEN_SIZE[0] // NUM_BOXES
-
-assert BOX_SIZE == SCREEN_SIZE[0] / NUM_BOXES, f"""
-SCREEN_SIZE should be a multiple of NUM_BOXES.
-NUM_BOXES = {SCREEN_SIZE[0] // BOX_SIZE} would be the next bigger choice.
-"""
-
-# init the managers
-gm = GameManager()
-bg = BoadGenerator(NUM_BOXES, NUM_BOXES)
-
-# Colors
-LIFE = (79, 193, 255)
-DEATH = (30, 30, 30)
-RED = (255, 0, 0)
-
-# Initialize pygame
-pygame.init()
-screen = pygame.display.set_mode(SCREEN_SIZE)
-clock = pygame.time.Clock()
-
-# Load a font for the message box
-font = pygame.font.SysFont(None, 36)
-
-# INITIAL BOARD
-board = bg.get_grid_offset(4)
-###
-
-# Function to draw the grid based on the numpy array
+from manager import GameManager
+from utils import Settings, LIFE, DEATH, RED
 
 
 def draw_grid(array, mouse_pos, is_paused):
-    for y in range(NUM_BOXES):
-        for x in range(NUM_BOXES):
+    """Function to draw the grid based on the numpy array
+
+    Args:
+        array: the current board
+        mouse_pos: position of the mouse
+        is_paused: whether the game was paused (SPACE)
+    """
+    for y in range(settings.resolution):
+        for x in range(settings.resolution):
             color = LIFE if array[y][x] == 1 else DEATH
             rect = pygame.draw.rect(
-                screen, color, (x * BOX_SIZE, y * BOX_SIZE, BOX_SIZE, BOX_SIZE))
+                screen, color, (x * settings.BOX_SIZE, y * settings.BOX_SIZE, settings.BOX_SIZE, settings.BOX_SIZE))
             if rect.collidepoint(mouse_pos) and is_paused:
                 if pygame.key.get_pressed()[pygame.K_h]:
                     board[y][x] = 1
                     pygame.draw.rect(
-                        screen, LIFE, (x * BOX_SIZE, y * BOX_SIZE, BOX_SIZE, BOX_SIZE))
+                        screen, LIFE, (x * settings.BOX_SIZE, y * settings.BOX_SIZE, settings.BOX_SIZE, settings.BOX_SIZE))
                 if pygame.key.get_pressed()[pygame.K_g]:
                     board[y][x] = 0
                     pygame.draw.rect(
-                        screen, DEATH, (x * BOX_SIZE, y * BOX_SIZE, BOX_SIZE, BOX_SIZE))
+                        screen, DEATH, (x * settings.BOX_SIZE, y * settings.BOX_SIZE, settings.BOX_SIZE, settings.BOX_SIZE))
 
 
 def show_message_box(message):
-    message_surface = font.render(message, True, RED)
+    message_surface = settings.font.render(message, True, RED)
     message_rect = message_surface.get_rect(
-        center=(SCREEN_SIZE[0] // 2, SCREEN_SIZE[1] // 2))
+        center=(settings.SCREEN_SIZE[0] // 2, settings.SCREEN_SIZE[1] // 2))
     screen.blit(message_surface, message_rect)
     pygame.display.update()
 
-# Main game loop
-
 
 def game_loop(args):
+    """The main game loop
+
+    Args:
+        args: CL arguments from the user
+    """
     global board
     running = True
     is_paused = True
@@ -81,22 +57,12 @@ def game_loop(args):
                 if event.key == pygame.K_SPACE:
                     is_paused = not is_paused
 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    is_mouse_pressed = True
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:
-                    is_mouse_pressed = False
-
         if is_start:
             is_start = False
 
         if not is_paused:
-            # Get the numpy array from the arr_provider function
+            # Get the numpy array from the ahrr_provider function
             board, empty = gm.step(board)
-
-            # Fill the screen with black
-            # screen.fill(DEATH)
 
             # Control the frame rate to 1 FPS
             clock.tick(args.fps)
@@ -113,11 +79,32 @@ def game_loop(args):
 
 
 if __name__ == "__main__":
+    # build argparser
     argparse = argparse.ArgumentParser()
 
     argparse.add_argument('--fps', type=int, default=2)
 
+    # board settings
+    argparse.add_argument('--resolution', type=int, default=250)
+    argparse.add_argument('--board_type', type=str, default='black')
+    argparse.add_argument('--prob', type=float, default=0.5)
+    argparse.add_argument('--grid_factor', type=int, default=1)
+
     args = argparse.parse_args()
+
+    # initialize the game manager
+    gm = GameManager()
+
+    # set parameters in utils.py
+    settings = Settings()
+    settings.set_parameters(args)
+    board = settings.board
+
+    # Initialize pygame
+    pygame.init()
+    screen = pygame.display.set_mode(settings.SCREEN_SIZE)
+    clock = pygame.time.Clock()
+
     # Start the game loop
     game_loop(args)
 
