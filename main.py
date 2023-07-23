@@ -87,7 +87,7 @@ if __name__ == "__main__":
     # board settings
     argparse.add_argument('--resolution', type=int, default=250)
     argparse.add_argument('--board_type', type=str, default='black')
-    argparse.add_argument('--prob', type=float, default=0.5)
+    argparse.add_argument('--prob', type=float, default=0.1)
     argparse.add_argument('--grid_factor', type=int, default=1)
 
     args = argparse.parse_args()
