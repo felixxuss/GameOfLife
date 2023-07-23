@@ -1,11 +1,11 @@
 import pygame
 from manager import GameManager
 from BoardGenerator import BoadGenerator
+import argparse
 
 # Constants for the grid size and box size
 NUM_BOXES = 50
 SCREEN_SIZE = (750, 750)
-FPS = 2
 
 # Calculate the box size based on the screen size and number of boxes per axis
 BOX_SIZE = SCREEN_SIZE[0] // NUM_BOXES
@@ -66,7 +66,7 @@ def show_message_box(message):
 # Main game loop
 
 
-def game_loop():
+def game_loop(args):
     global board
     running = True
     is_paused = True
@@ -99,7 +99,7 @@ def game_loop():
             # screen.fill(DEATH)
 
             # Control the frame rate to 1 FPS
-            clock.tick(FPS)
+            clock.tick(args.fps)
             if empty:
                 is_paused = True
                 show_message_box("The game is over")
@@ -113,8 +113,13 @@ def game_loop():
 
 
 if __name__ == "__main__":
+    argparse = argparse.ArgumentParser()
+
+    argparse.add_argument('--fps', type=int, default=2)
+
+    args = argparse.parse_args()
     # Start the game loop
-    game_loop()
+    game_loop(args)
 
     # Quit pygame
     pygame.quit()
