@@ -1,7 +1,7 @@
 # Game of Life
 
 ## Usage
-After when the game is running everything is paused. The game can be **started and paused with the SPACE-key**. 
+After the game was started, everything is paused. The game can be **started and paused with the SPACE-key**. 
 
 When the game is in pause mode:
 - the player can press and hold the H-key to bring new squares to LIFE at the current mouse position
